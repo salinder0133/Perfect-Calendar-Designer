@@ -6,7 +6,7 @@
 
 **Pro Calendar Designer** is a feature-rich, web-based application that allows users to design, customize, and download high-quality printable calendars. With support for custom photos, various artistic themes, and export options, it's the perfect tool for creating personalized calendars.
 
-🔗 **[Live Demo](https://salinder0133.github.io/Perfect-Calendar-Designer/)** 
+> **Live Preview:** [👉 Click Here to Open the Website](https://salinder0133.github.io/Perfect-Calendar-Designer/)** 
 
 ---
 
