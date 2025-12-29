@@ -47,22 +47,6 @@ Choose from 4 stunning pre-built themes:
     - `FontAwesome`: For UI icons.
     - `Google Fonts`: For typography.
 
----
-
-## 📸 Screenshots
-
-| Light Mode | Dark Mode |
-|:---:|:---:|
-| *(Place your screenshot here)* | *(Place your screenshot here)* |
-
----
-
-## 🔧 How to Run Locally
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/salinder0133/calendar-designer.git](https://github.com/salinder0133/calendar-designer.git)
-
    ---
 
 ### **💡 Pro Tip (Screenshots ke liye):**
