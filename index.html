@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Perfect Calendar Designer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;500;600;700;800&family=Dancing+Script:wght@700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --text-main: #000000;
+            --text-highlight: #ff0000;
+            --font-calendar: 'Montserrat', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            font-size: 24px;
+            transition: color 0.3s;
+        }
+
+        /* --- CONTROLS --- */
+        .controls-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            max-width: 1100px;
+            width: 100%;
+            z-index: 100;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        select,
+        input[type="month"],
+        input[type="number"],
+        input[type="color"] {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            outline: none;
+            cursor: pointer;
+            height: 40px;
+            background: #fff;
+            font-family: 'Montserrat', sans-serif;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+        }
+
+        input[type="range"] {
+            cursor: pointer;
+            width: 150px;
+        }
+
+        .file-upload-label {
+            background: #6c5ce7;
+            color: white;
+            padding: 0 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 40px;
+            transition: 0.3s;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .file-upload-label:hover {
+            background: #5649c0;
+        }
+
+        .file-upload-label.uploaded {
+            background: #00b894;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button {
+            padding: 0 25px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            height: 40px;
+            transition: 0.3s;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .btn-dl {
+            background: #0984e3;
+            color: white;
+        }
+
+        .btn-dl-img {
+            background: #e17055;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #ff7675;
+            color: white;
+        }
+
+        .btn-dark {
+            background: #2d3436;
+            color: white;
+        }
+
+        /* Dark Mode Button */
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* --- PREVIEW AREA --- */
+        .preview-area {
+            width: 100%;
+            max-width: 900px;
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #calendar-canvas {
+            width: 794px;
+            height: 1123px;
+            /* A4 Fixed Size */
+            background-color: white;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            transform-origin: top center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+            background-repeat: no-repeat;
+            font-family: var(--font-calendar);
+        }
+
+        /* --- HIGHLIGHT STYLES --- */
+        .highlight-text {
+            color: var(--text-highlight) !important;
+            font-weight: 800;
+        }
+
+        /* --- SINGLE MONTH STYLES --- */
+        .cal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            color: var(--text-main);
+            justify-content: flex-end;
+        }
+
+        .cal-box {
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px;
+        }
+
+        .style-glass .cal-box {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .style-luxury .cal-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #daa520;
+            outline: 5px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .style-bold .cal-box {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            color: white;
+            width: 110%;
+            margin-left: -5%;
+        }
+
+        .style-neon .cal-box {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #00f3ff;
+            box-shadow: 0 0 20px #00f3ff;
+            color: white;
+        }
+
+        .single-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .single-head {
+            font-weight: bold;
+            padding-bottom: 5px;
+            border-bottom: 1px solid currentColor;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .single-date {
+            font-size: 30px;
+            font-weight: 600;
+            padding: 5px;
+        }
+
+        /* --- FULL YEAR STYLES --- */
+        .year-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            background: white;
+        }
+
+        .year-photo-zone {
+            height: 40%;
+            width: 100%;
+            background-size: cover;
+            background-position: center 50%;
+            background-repeat: no-repeat;
+            transition: background-position 0.1s;
+        }
+
+        .year-calendar-zone {
+            height: 60%;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .year-style-glass .year-calendar-zone {
+            background: #ffffff;
+        }
+
+        .year-style-luxury .year-calendar-zone {
+            background: #fffbf0;
+            color: #5c4d36;
+        }
+
+        .year-style-luxury .year-main-title {
+            color: #daa520;
+        }
+
+        .year-style-bold .year-calendar-zone {
+            background: #2d3436;
+            color: white !important;
+        }
+
+        .year-style-neon .year-calendar-zone {
+            background: #000000;
+            color: #00f3ff !important;
+        }
+
+        .year-style-neon .year-main-title {
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .year-style-neon .highlight-text {
+            color: #ff0055 !important;
+            text-shadow: 0 0 5px #ff0055;
+        }
+
+        .year-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid currentColor;
+        }
+
+        .year-main-title {
+            font-family: inherit;
+            font-size: 60px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .year-subtitle {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.7;
+        }
+
+        .year-grid-system {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 20px 25px;
+            flex-grow: 1;
+        }
+
+        .mini-month {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mini-month-name {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .mini-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            gap: 2px;
+        }
+
+        .mini-head {
+            font-size: 9px;
+            font-weight: 700;
+            opacity: 0.6;
+            margin-bottom: 2px;
+        }
+
+        .mini-num {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 1px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- DARK MODE STYLES --- */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1e1e1e 0%, #000000 100%);
+            color: #f5f5f5;
+        }
+
+        body.dark-mode h1 {
+            color: #f5f5f5;
+        }
+
+        body.dark-mode .controls-panel {
+            background: #2d3436;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-mode .control-group {
+            color: #dfe6e9;
+        }
+
+        body.dark-mode select,
+        body.dark-mode input[type="month"],
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="color"] {
+            background: #636e72;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode .btn-dark {
+            background: #f1c40f;
+            color: #000;
+        }
+
+        /* Note: Calendar Canvas stays light because it represents paper */
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .controls-panel {
+                padding: 15px;
+                gap: 10px;
+                justify-content: space-between;
+            }
+
+            .control-group {
+                flex: 1 1 45%;
+                min-width: 140px;
+            }
+
+            button {
+                flex: 1 1 100%;
+                margin-top: 5px;
+            }
+
+            input[type="range"] {
+                width: 100%;
+            }
+
+            .preview-area {
+                padding: 10px;
+                background: #222;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1><i class="fas fa-print"></i> Pro Calendar Maker</h1>
+
+    <div class="controls-panel">
+        <button class="btn-dark" id="darkModeBtn" onclick="toggleDarkMode()">
+            <i class="fas fa-moon"></i> Dark Mode
+        </button>
+
+        <div class="control-group">
+            <label>1. Photo</label>
+            <label class="file-upload-label" id="uploadLabel">
+                <i class="fas fa-upload"></i> Upload
+                <input type="file" id="photoInput" accept="image/*" onchange="handleFile(this)">
+            </label>
+        </div>
+
+        <div class="control-group hidden" id="photoPosGroup">
+            <label>Photo Position</label>
+            <input type="range" id="photoPosY" min="0" max="100" value="50" oninput="liveUpdate()">
+        </div>
+
+        <div class="control-group hidden" id="photoZoomGroup">
+            <label>Photo Zoom</label>
+            <input type="range" id="photoZoom" min="100" max="250" value="100" oninput="liveUpdate()">
+        </div>
+
+        <div class="control-group">
+            <label>2. Style</label>
+            <select id="styleSelect" onchange="liveUpdate()">
+                <option value="glass">💎 Glass Modern</option>
+                <option value="luxury">✨ Luxury Gold</option>
+                <option value="bold">🎨 Bold Magazine</option>
+                <option value="neon">🟣 Neon Cyberpunk</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Font</label>
+            <select id="fontSelect" onchange="liveUpdate()">
+                <option value="'Montserrat', sans-serif">Modern</option>
+                <option value="'Playfair Display', serif">Classic</option>
+                <option value="'Dancing Script', cursive">Handwritten</option>
+            </select>
+        </div>
+
+        <div class="control-group" id="posGroup">
+            <label>Box Position</label>
+            <select id="posSelect" onchange="liveUpdate()">
+                <option value="flex-end">Bottom</option>
+                <option value="center">Center</option>
+                <option value="flex-start">Top</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Text Color</label>
+            <input type="color" id="textColor" value="#000000" oninput="liveUpdate()">
+        </div>
+
+        <div class="control-group">
+            <label>Holiday Color</label>
+            <input type="color" id="highlightColor" value="#ff0000" oninput="liveUpdate()">
+        </div>
+
+        <div class="control-group">
+            <label>Mode</label>
+            <select id="modeSelect" onchange="toggleMode()">
+                <option value="single">Single Month</option>
+                <option value="year">Full Year</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Date/Year</label>
+            <input type="month" id="monthInput" oninput="liveUpdate()">
+            <input type="number" id="yearInput" class="hidden" placeholder="2025" value="2025" oninput="liveUpdate()">
+        </div>
+
+        <button class="btn-dl-img hidden" id="downloadImgBtn" onclick="downloadImage()">Download JPG</button>
+        <button class="btn-dl hidden" id="downloadBtn" onclick="downloadPDF()">Download PDF</button>
+        <button class="btn-reset" onclick="resetAll()">Clear</button>
+    </div>
+
+    <div class="preview-area" id="previewArea">
+        <div id="calendar-canvas"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('calendar-canvas');
+        const previewArea = document.getElementById('previewArea');
+        const monthInput = document.getElementById('monthInput');
+        const yearInput = document.getElementById('yearInput');
+        const styleSelect = document.getElementById('styleSelect');
+        const fontSelect = document.getElementById('fontSelect');
+        const posSelect = document.getElementById('posSelect');
+        const modeSelect = document.getElementById('modeSelect');
+        const textColorInput = document.getElementById('textColor');
+        const highlightColorInput = document.getElementById('highlightColor');
+        const uploadLabel = document.getElementById('uploadLabel');
+        const photoInput = document.getElementById('photoInput');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadImgBtn = document.getElementById('downloadImgBtn');
+        const posGroup = document.getElementById('posGroup');
+        const photoPosGroup = document.getElementById('photoPosGroup');
+        const photoZoomGroup = document.getElementById('photoZoomGroup');
+
+        const now = new Date();
+        monthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        let currentPhoto = null;
+        let futureWarningAccepted = false; // New flag for one-time warning
+
+        // --- NEW DARK MODE FUNCTION ---
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.getElementById('darkModeBtn');
+            const isDark = document.body.classList.contains('dark-mode');
+
+            if (isDark) {
+                btn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                btn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+        }
+        // -----------------------------
+
+        const fixedHolidays = [
+            "1-1", "1-14", "1-26", "2-14", "4-14", "5-1", "8-15", "10-2", "11-14", "12-25"
+        ];
+
+        const variableHolidays = {
+            "2024": ["3-8", "3-25", "4-11", "4-17", "6-17", "8-19", "9-7", "10-12", "11-1"],
+            "2025": ["2-26", "3-14", "3-31", "4-18", "8-9", "8-16", "8-27", "10-20", "11-5"],
+            "2026": ["2-15", "3-4", "3-20", "4-3", "8-28", "9-4", "9-14", "11-8", "11-24"],
+            "2027": ["3-7", "3-22", "3-10", "8-17", "9-15", "10-29", "11-13"],
+            "2028": ["2-24", "3-11", "2-27", "8-5", "9-3", "10-17", "11-1"],
+            "2029": ["2-12", "3-1", "2-16", "8-24", "9-22", "11-5", "11-20"],
+            "2030": ["3-2", "3-19", "2-5", "8-13", "9-11", "10-26", "11-9"]
+        };
+
+        function toggleMode() {
+            if (modeSelect.value === 'single') {
+                monthInput.classList.remove('hidden');
+                yearInput.classList.add('hidden');
+                posGroup.style.display = 'flex';
+                photoPosGroup.classList.add('hidden');
+                photoZoomGroup.classList.add('hidden');
+            } else {
+                monthInput.classList.add('hidden');
+                yearInput.classList.remove('hidden');
+                posGroup.style.display = 'none';
+                if (currentPhoto) {
+                    photoPosGroup.classList.remove('hidden');
+                    photoZoomGroup.classList.remove('hidden');
+                }
+            }
+            if (currentPhoto) generateCalendar();
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    currentPhoto = e.target.result;
+                    uploadLabel.classList.add('uploaded');
+                    uploadLabel.innerHTML = '<i class="fas fa-check"></i> Photo Ready!';
+
+                    if (modeSelect.value === 'year') {
+                        photoPosGroup.classList.remove('hidden');
+                        photoZoomGroup.classList.remove('hidden');
+                    }
+                    generateCalendar();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function liveUpdate() {
+            if (currentPhoto) generateCalendar();
+        }
+
+        function isHoliday(year, month, day) {
+            const key = `${month + 1}-${day}`;
+            if (fixedHolidays.includes(key)) return true;
+            const yStr = year.toString();
+            if (variableHolidays[yStr] && variableHolidays[yStr].includes(key)) {
+                return true;
+            }
+            return false;
+        }
+
+        function generateCalendar() {
+            if (!currentPhoto) return;
+
+            const style = styleSelect.value;
+            const mode = modeSelect.value;
+            const position = posSelect.value;
+            const color = textColorInput.value;
+            const hlColor = highlightColorInput.value;
+            const font = fontSelect.value;
+            const photoY = document.getElementById('photoPosY').value;
+            const photoZ = document.getElementById('photoZoom').value;
+
+            if (mode === 'year') {
+                const yearVal = parseInt(yearInput.value);
+                if (yearVal > 2030 && !futureWarningAccepted) {
+                    const confirmMsg = "Notice:\nHolidays are available up to 2030.\nFuture holidays will be added later.\n\nClick OK to generate anyway.";
+                    if (confirm(confirmMsg)) {
+                        futureWarningAccepted = true;
+                    } else {
+                        return;
+                    }
+                }
+            }
+
+            document.documentElement.style.setProperty('--text-main', color);
+            document.documentElement.style.setProperty('--text-highlight', hlColor);
+            document.documentElement.style.setProperty('--font-calendar', font);
+
+            canvas.className = `year-style-${style}`;
+            canvas.innerHTML = '';
+
+            previewArea.style.display = 'flex';
+            fitPreview();
+
+            if (mode === 'single') {
+                canvas.className = `style-${style}`;
+                canvas.style.backgroundImage = `url(${currentPhoto})`;
+                canvas.style.backgroundPosition = 'center center';
+
+                if (!monthInput.value) return;
+                renderSingle(monthInput.value, position, style);
+            } else {
+                canvas.style.backgroundImage = 'none';
+                if (!yearInput.value) return;
+                renderYear(yearInput.value, style, photoY, photoZ);
+            }
+
+            downloadBtn.classList.remove('hidden');
+            downloadImgBtn.classList.remove('hidden');
+        }
+
+        function renderSingle(val, position, style) {
+            const [year, month] = val.split('-');
+            const date = new Date(year, month - 1, 1);
+            const monthName = date.toLocaleString('default', { month: 'long' });
+            const totalDays = new Date(year, month, 0).getDate();
+            const firstDay = date.getDay();
+
+            let boxClass = `cal-box`;
+
+            let html = `<div class="cal-overlay" style="justify-content: ${position};">`;
+
+            html += `<div class="${boxClass}">
+                        <div style="font-size:60px; font-weight:800; line-height:1; margin-bottom:10px;">${monthName}</div>
+                        <div style="font-size:20px; letter-spacing:5px; margin-bottom:20px;">${year}</div>
+                        <div class="single-grid">`;
+
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach((d, index) => {
+                const hlClass = index === 0 ? 'highlight-text' : '';
+                html += `<div class="single-head ${hlClass}">${d}</div>`
+            });
+
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+            for (let i = 1; i <= totalDays; i++) {
+                const currentDayOfWeek = new Date(year, month - 1, i).getDay();
+                let classes = "single-date";
+                if (currentDayOfWeek === 0 || isHoliday(year, month - 1, i)) {
+                    classes += " highlight-text";
+                }
+                html += `<div class="${classes}">${i}</div>`;
+            }
+
+            html += `   </div></div></div>`;
+            canvas.innerHTML = html;
+        }
+
+        function renderYear(year, style, photoY, photoZ) {
+            let html = `<div class="year-layout">`;
+            html += `<div class="year-photo-zone" style="background-image: url(${currentPhoto}); background-position: center ${photoY}%; background-size: ${photoZ}%"></div>`;
+
+            html += `<div class="year-calendar-zone">
+                        <div class="year-header">
+                            <div class="year-main-title">${year}</div>
+                            <div class="year-subtitle">Calendar Collection</div>
+                        </div>
+                        <div class="year-grid-system">`;
+
+            for (let m = 0; m < 12; m++) {
+                const d = new Date(year, m, 1);
+                const mName = d.toLocaleString('default', { month: 'long' });
+                const tDays = new Date(year, m + 1, 0).getDate();
+                const fDay = d.getDay();
+
+                html += `<div class="mini-month">
+                            <div class="mini-month-name">${mName}</div>
+                            <div class="mini-days">
+                                ${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((x, idx) => `<div class="mini-head ${idx === 0 ? 'highlight-text' : ''}">${x}</div>`).join('')}
+                                ${Array(fDay).fill('<span></span>').join('')}
+                                ${Array.from({ length: tDays }, (_, i) => {
+                    const dayNum = i + 1;
+                    const dayOfWeek = new Date(year, m, dayNum).getDay();
+                    let cls = "mini-num";
+                    if (dayOfWeek === 0 || isHoliday(year, m, dayNum)) cls += " highlight-text";
+                    return `<div class="${cls}">${dayNum}</div>`
+                }).join('')}
+                            </div>
+                         </div>`;
+            }
+
+            html += `</div></div></div>`;
+            canvas.innerHTML = html;
+        }
+
+        function resetAll() {
+            window.location.reload();
+        }
+
+        function fitPreview() {
+            const wrapper = previewArea;
+            const screenWidth = window.innerWidth - 40;
+            let scale = 1;
+            if (screenWidth < 840) {
+                scale = screenWidth / 820;
+            }
+            canvas.style.transform = `scale(${scale})`;
+            wrapper.style.height = `${(1123 * scale) + 40}px`;
+        }
+        window.addEventListener('resize', fitPreview);
+        window.addEventListener('load', fitPreview);
+
+        async function downloadPDF() {
+            const btn = document.getElementById('downloadBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            const originalTransform = canvas.style.transform;
+            canvas.style.transform = "none";
+            window.scrollTo(0, 0);
+            await new Promise(r => setTimeout(r, 100));
+            const c = await html2canvas(canvas, { scale: 2, useCORS: true, allowTaint: true });
+            canvas.style.transform = originalTransform;
+            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+            pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+            pdf.save('My-Calendar.pdf');
+            btn.innerHTML = 'Download PDF';
+        }
+
+        async function downloadImage() {
+            const btn = document.getElementById('downloadImgBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            const originalTransform = canvas.style.transform;
+            canvas.style.transform = "none";
+            window.scrollTo(0, 0);
+            await new Promise(r => setTimeout(r, 100));
+            const c = await html2canvas(canvas, { scale: 2, useCORS: true, allowTaint: true });
+            canvas.style.transform = originalTransform;
+            const link = document.createElement('a');
+            link.download = 'My-Calendar.jpg';
+            link.href = c.toDataURL('image/jpeg', 0.9);
+            link.click();
+            btn.innerHTML = 'Download JPG';
+        }
+    </script>
+</body>
+
+</html>
