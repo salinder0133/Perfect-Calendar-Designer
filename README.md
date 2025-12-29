@@ -47,10 +47,5 @@ Choose from 4 stunning pre-built themes:
     - `FontAwesome`: For UI icons.
     - `Google Fonts`: For typography.
 
-   ---
 
-### **💡 Pro Tip (Screenshots ke liye):**
-Is README mein maine `Screenshots` ka section banaya hai.
-1. Jab tum site ko live kar loge, uska screenshot le lena (ek Light Mode ka aur ek Dark Mode ka).
-2. Un photos ko bhi GitHub par upload kar dena.
-3. Fir `(Place your screenshot here)` ki jagah un photos ka link daal dena. Isse tumhara project GitHub par bahut sundar dikhega!
+
