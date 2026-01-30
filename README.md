@@ -6,7 +6,7 @@
 
 **Pro Calendar Designer** is a feature-rich, web-based application that allows users to design, customize, and download high-quality printable calendars. With support for custom photos, various artistic themes, and export options, it's the perfect tool for creating personalized calendars.
 
-> **Live Preview:** [👉 Click Here to Open the Website](https://salinder0133.github.io/Perfect-Calendar-Designer/)** 
+> **Live Preview:** [👉 Click Here to Open the Website](https://salinder0133.github.io/Perfect-Calendar-Designer/)
 
 ---
 
@@ -19,9 +19,11 @@ Choose from 4 stunning pre-built themes:
 - **🎨 Bold Magazine:** High contrast, modern magazine look.
 - **🟣 Neon Cyberpunk:** Dark mode with glowing neon accents.
 
-### 🛠️ Customization Options
-- **📸 Photo Upload:** Drag & drop or upload your own background image.
-- **🖼️ Image Controls:** Zoom in/out and adjust vertical position.
+### 🛠️ Customization & Editing
+- **📸 Smart Photo Studio:** Upload your own image and enhance it with **Live Brightness** and **Blur** filters.
+- **📅 Interactive Events:** Click on any date to add custom events (like Birthdays or Meetings) via a modern popup modal.
+- **💬 Custom Quotes:** Add a personal touch by inserting your favorite inspirational quote directly onto the calendar.
+- **🖼️ Layout Controls:** Zoom in/out and adjust the vertical position of your photo for the perfect fit.
 - **✍️ Typography:** Switch between Modern, Classic, and Handwritten fonts.
 - **🎨 Colors:** Fully customizable text and holiday highlight colors.
 - **🌓 Dark Mode:** Built-in UI toggle for comfortable night-time editing.
@@ -40,12 +42,9 @@ Choose from 4 stunning pre-built themes:
 
 - **HTML5:** Semantic structure.
 - **CSS3:** Advanced styling using CSS Variables, Flexbox, Grid, and Backdrop Filter.
-- **JavaScript (ES6):** Core logic for date calculation, DOM manipulation, and state management.
+- **JavaScript (ES6):** Core logic for date calculation, DOM manipulation, Modal handling, and state management.
 - **Libraries:**
     - `html2canvas`: For capturing the DOM as an image.
     - `jspdf`: For generating PDF files.
     - `FontAwesome`: For UI icons.
     - `Google Fonts`: For typography.
-
-
-
